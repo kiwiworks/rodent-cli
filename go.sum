@@ -51,6 +51,8 @@ github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLf
 github.com/josharian/intern v1.0.0/go.mod h1:5DoeVV0s6jJacbCEi61lwdGj/aVlrQvzHFFd8Hwg//Y=
 github.com/kiwiworks/rodent v0.4.6 h1:/28Fda1vdsHBZGigNFZwU2FqC5vSv2PjcbqCipCHHv8=
 github.com/kiwiworks/rodent v0.4.6/go.mod h1:B7mWNadsEPT7E0ANOjpTHGCudYdb+ZJX6lBRD4/Kx9g=
+github.com/kiwiworks/rodent v0.4.7 h1:y9yhPU2CktR2OzflH50P5SbMgaLiaUQoZjxgivZmpio=
+github.com/kiwiworks/rodent v0.4.7/go.mod h1:VXQ1IyTrz8eR03UBJFRvfsOLz7WJv+vOkLkeBP/Qy5g=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=
 github.com/kr/pretty v0.2.1/go.mod h1:ipq/a2n7PKx3OHsz4KJII5eveXtPO4qwEXGdVfWzfnI=
 github.com/kr/pretty v0.3.1 h1:flRD4NNwYAUpkphVc1HcthR4KEIFJ65n8Mw5qdRn3LE=
