@@ -136,7 +136,7 @@ func (g *Generator) generateSchemas(schemaProxies *orderedmap.Map[string, *base.
 				jsonProps = append(jsonProps, "omitempty")
 			}
 			stmt.Tag(map[string]string{"json": strings.Join(jsonProps, ",")})
-			//fmt.Printf("%s.%s -> %s(%s)\n", key, prop, propSchema.Type, propSchema.Format)
+			//fmt.Printf("%s.%s -> %s(%s)", key, prop, propSchema.Type, propSchema.Format)
 			fields = append(fields, stmt)
 		}
 		f.Type().Id(key).Struct(fields...)

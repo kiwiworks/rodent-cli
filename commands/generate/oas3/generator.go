@@ -64,7 +64,7 @@ func (g *Generator) Build(ctx context.Context, outputDir string) error {
 		return err
 	}
 
-	if err := g.generateClient(g.model.Model); err != nil {
+	if err := g.generateClientPackage(g.model.Model); err != nil {
 		return err
 	}
 
