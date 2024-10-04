@@ -113,6 +113,52 @@ func operationResponse(operation *v3.Operation, content string) (*base.SchemaPro
 	return nil, errors.Newf("no valid response found for operation %s with content type %s from any of the successful http status code", operation.OperationId, content)
 }
 
+type (
+	pathParamCodeDecorator func(group *jen.Group)
+	pathParamMethodParams  []jen.Code
+	pathParamsCode         struct {
+		codeDecorator pathParamCodeDecorator
+		params        pathParamMethodParams
+	}
+)
+
+func (g *Generator) generatePathParamsCode(path string, operation *v3.Operation) pathParamsCode {
+	fragments := strings.Split(path, "/")
+	orderedParams := make([]string, 0)
+	finalFragments := make([]string, len(fragments))
+	params := make(pathParamMethodParams, 0)
+	for idx, fragment := range fragments {
+		finalFragment := fragment
+		if strings.HasPrefix(fragment, "{") && strings.HasSuffix(fragment, "}") {
+			fragmentParam := strings.Trim(caps.ToLowerCamel(fragment), "{}")
+			orderedParams = append(orderedParams, fragmentParam)
+			finalFragment = "%s"
+			for _, opParam := range operation.Parameters {
+				if opParam.In != "path" {
+					continue
+				}
+				if caps.ToLowerCamel(opParam.Name) != fragmentParam {
+					continue
+				}
+				params = append(params, jen.Id(fragmentParam).String())
+			}
+		}
+		finalFragments[idx] = finalFragment
+	}
+	path = strings.Join(finalFragments, "/")
+	return pathParamsCode{
+		codeDecorator: func(group *jen.Group) {
+			group.Id("path").Op(":=").Qual("fmt", "Sprintf").CallFunc(func(group *jen.Group) {
+				group.Lit(path)
+				for _, param := range orderedParams {
+					group.Id(caps.ToLowerCamel(param))
+				}
+			})
+		},
+		params: params,
+	}
+}
+
 func (g *Generator) generateClientMethod(f *jen.File, method, apiPath string, operation *v3.Operation) error {
 	if operation == nil {
 		return nil
@@ -130,7 +176,7 @@ func (g *Generator) generateClientMethod(f *jen.File, method, apiPath string, op
 			log.Warn("no request body found for operation with content type application/json")
 			return nil
 		}
-		params = append(params, jen.Id("req").Op("*").Qual(dtoPackage, filepath.Base(request.Schema.GetReference())))
+		//params = append(params, jen.Id("req").Op("*").Qual(dtoPackage, filepath.Base(request.Schema.GetReference())))
 	}
 
 	response, err := operationResponse(operation, "application/json")
@@ -150,40 +196,47 @@ func (g *Generator) generateClientMethod(f *jen.File, method, apiPath string, op
 		return errors.Wrapf(err, "failed to build response schema for %s", apiPath)
 	}
 	if schema.Items != nil && schema.Items.IsA() {
-		result = jen.List(jen.Index().Qual(dtoPackage, filepath.Base(schema.Items.A.GetReference())))
-		executeResult = result
+		result = jen.Id("response").List(jen.Index().Qual(dtoPackage, filepath.Base(schema.Items.A.GetReference())))
+		executeResult = jen.List(jen.Index().Qual(dtoPackage, filepath.Base(schema.Items.A.GetReference())))
 	} else if responseType != "" && schema.Type[0] == "object" {
-		result = jen.Op("*").Qual(dtoPackage, responseType)
+		result = jen.Id("response").Op("*").Qual(dtoPackage, responseType)
 		executeResult = jen.Qual(dtoPackage, responseType)
 	} else {
-		stmt := jen.Op("")
+		stmt := jen.Id("response")
 		if err := oas3TypeToGoType(stmt, response, schema); err != nil {
 			return errors.Wrapf(err, "failed to generate client method for %s, invalid response type", apiPath)
 		}
 		result = stmt
+		stmt = jen.Op("")
+		if err := oas3TypeToGoType(stmt, response, schema); err != nil {
+			return errors.Wrapf(err, "failed to generate client method for %s, invalid response type", apiPath)
+		}
 		executeResult = stmt
 	}
 
+	generated := g.generatePathParamsCode(apiPath, operation)
+	params = append(params, generated.params...)
 	params = append(params, jen.Id("opts").Op("...").Qual(optPackage, "Option").Index(jen.Qual(sdkPackage, "Request")))
 
 	f.Commentf("%s performs the %s %s operation.\n%s", methodName, method, apiPath, operation.Description)
 	f.Func().Params(jen.Id("c").Op("*").Id("Client")).Id(methodName).
 		Params(params...).
-		Parens(jen.List(result, jen.Error())).
+		Parens(jen.List(result, jen.Id("err").Error())).
 		BlockFunc(func(group *jen.Group) {
+			generated.codeDecorator(group)
 			group.Id("request").Op(":=").Id("c").Dot("Request").CallFunc(func(group *jen.Group) {
 				group.Lit(method)
-				group.Lit(apiPath)
+				group.Id("path")
 				group.Id("opts").Op("...")
 			})
-			group.List(jen.Id("response"), jen.Err()).Op(":=").Qual(sdkPackage, "Execute").Index(executeResult).
+			group.List(jen.Id("response"), jen.Err()).Op("=").Qual(sdkPackage, "Execute").Index(executeResult).
 				CallFunc(func(group *jen.Group) {
 					group.Id("ctx")
 					group.Op("*").Id("c")
 					group.Id("request")
 				})
 			group.If(jen.Err().Op("!=").Nil()).BlockFunc(func(group *jen.Group) {
-				group.Return(jen.Nil(), jen.Qual(errPackage, "Wrapf").CallFunc(func(group *jen.Group) {
+				group.Return(jen.Id("response"), jen.Qual(errPackage, "Wrapf").CallFunc(func(group *jen.Group) {
 					group.Id("err")
 					group.Lit(fmt.Sprintf("failed to execute %s %s operation", method, apiPath))
 				}))
