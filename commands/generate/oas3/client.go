@@ -196,7 +196,9 @@ func (g *Generator) generateClientMethod(f *jen.File, method, apiPath string, op
 		return errors.Wrapf(err, "failed to build response schema for %s", apiPath)
 	}
 	if schema.Items != nil && schema.Items.IsA() {
-		result = jen.Id("response").List(jen.Index().Qual(dtoPackage, filepath.Base(schema.Items.A.GetReference())))
+		result = jen.Id("response").Op("*").List(
+			jen.Index().Qual(dtoPackage, filepath.Base(schema.Items.A.GetReference())),
+		)
 		executeResult = jen.List(jen.Index().Qual(dtoPackage, filepath.Base(schema.Items.A.GetReference())))
 	} else if responseType != "" && schema.Type[0] == "object" {
 		result = jen.Id("response").Op("*").Qual(dtoPackage, responseType)
@@ -232,7 +234,7 @@ func (g *Generator) generateClientMethod(f *jen.File, method, apiPath string, op
 			group.List(jen.Id("response"), jen.Err()).Op("=").Qual(sdkPackage, "Execute").Index(executeResult).
 				CallFunc(func(group *jen.Group) {
 					group.Id("ctx")
-					group.Op("*").Id("c")
+					group.Op("*").Id("c").Dot("Client")
 					group.Id("request")
 				})
 			group.If(jen.Err().Op("!=").Nil()).BlockFunc(func(group *jen.Group) {
