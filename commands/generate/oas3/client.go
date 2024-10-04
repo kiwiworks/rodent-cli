@@ -204,12 +204,12 @@ func (g *Generator) generateClientMethod(f *jen.File, method, apiPath string, op
 		result = jen.Id("response").Op("*").Qual(dtoPackage, responseType)
 		executeResult = jen.Qual(dtoPackage, responseType)
 	} else {
-		stmt := jen.Id("response")
+		stmt := jen.Id("response").Op("*")
 		if err := oas3TypeToGoType(stmt, response, schema); err != nil {
 			return errors.Wrapf(err, "failed to generate client method for %s, invalid response type", apiPath)
 		}
 		result = stmt
-		stmt = jen.Op("*")
+		stmt = jen.Op("")
 		if err := oas3TypeToGoType(stmt, response, schema); err != nil {
 			return errors.Wrapf(err, "failed to generate client method for %s, invalid response type", apiPath)
 		}
