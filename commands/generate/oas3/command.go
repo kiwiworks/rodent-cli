@@ -12,7 +12,19 @@ import (
 	"github.com/kiwiworks/rodent/logger"
 )
 
-func Generate(ctx context.Context, uri url.URL, outputDir string) error {
+type Flags struct {
+	OutputDir      string
+	GenerateModule bool
+}
+
+func DefaultFlags() Flags {
+	return Flags{
+		OutputDir:      ".",
+		GenerateModule: true,
+	}
+}
+
+func Generate(ctx context.Context, uri url.URL, flags Flags) error {
 	log := logger.FromContext(ctx)
 
 	tmpDir, err := os.MkdirTemp("", "")
@@ -50,5 +62,5 @@ func Generate(ctx context.Context, uri url.URL, outputDir string) error {
 	if err != nil {
 		return errors.Wrapf(err, "failed to create generator")
 	}
-	return generator.Build(ctx, outputDir)
+	return generator.Build(ctx, flags)
 }

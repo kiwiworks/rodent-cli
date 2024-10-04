@@ -12,9 +12,11 @@ import (
 )
 
 func Oas3Client() *command.Command {
-	var filename string
-	var fileUrl string
-	var outputDir string
+	var (
+		filename string
+		fileUrl  string
+	)
+	flags := oas3.DefaultFlags()
 
 	return command.New("oas3", "Generate OAS3 client", "todo",
 		command.Runner(func(cmd *cobra.Command, args []string) error {
@@ -30,14 +32,14 @@ func Oas3Client() *command.Command {
 					Scheme: "file",
 					Path:   filename,
 				}
-				return oas3.Generate(cmd.Context(), u, outputDir)
+				return oas3.Generate(cmd.Context(), u, flags)
 			}
 			if fileUrl != "" {
 				u, err := url.Parse(fileUrl)
 				if err != nil {
 					return err
 				}
-				return oas3.Generate(cmd.Context(), *u, outputDir)
+				return oas3.Generate(cmd.Context(), *u, flags)
 			}
 			return errors.Newf("not implemented")
 		}),
@@ -60,6 +62,12 @@ func Oas3Client() *command.Command {
 			Shorthand: "o",
 			Required:  true,
 			Usage:     "output directory for the generated code",
-		}, &outputDir),
+		}, &flags.OutputDir),
+		command.BoolFlag(command.Flag{
+			Name:      "module",
+			Shorthand: "m",
+			Required:  false,
+			Usage:     "generate module, if set to false, will generate a simple package without an associated go.mod file",
+		}, &flags.GenerateModule),
 	)
 }

@@ -48,7 +48,8 @@ func NewGenerator(model *libopenapi.DocumentModel[v3.Document]) *Generator {
 	}
 }
 
-func (g *Generator) Build(ctx context.Context, outputDir string) error {
+func (g *Generator) Build(ctx context.Context, flags Flags) error {
+	outputDir := flags.OutputDir
 	g.outputDir = outputDir
 	g.moduleName = g.model.Model.Info.Title
 	log := logger.FromContext(ctx)
@@ -89,16 +90,17 @@ func (g *Generator) Build(ctx context.Context, outputDir string) error {
 		}
 	}
 
-	if err := g.generateModule(); err != nil {
-		return err
-	}
+	if flags.GenerateModule {
+		if err := g.generateModule(); err != nil {
+			return err
+		}
 
-	cmd := exec.Command("go", "mod", "tidy")
-	cmd.Dir = outputDir
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return errors.Wrapf(err, "failed to run go mod tidy: %s", output)
+		cmd := exec.Command("go", "mod", "tidy")
+		cmd.Dir = outputDir
+		output, err := cmd.CombinedOutput()
+		if err != nil {
+			return errors.Wrapf(err, "failed to run go mod tidy: %s", output)
+		}
 	}
-
 	return nil
 }

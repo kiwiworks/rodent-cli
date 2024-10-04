@@ -4,7 +4,7 @@ require (
 	github.com/cavaliergopher/grab/v3 v3.0.1
 	github.com/chanced/caps v1.0.2
 	github.com/dave/jennifer v1.7.1
-	github.com/kiwiworks/rodent v0.4.7
+	github.com/kiwiworks/rodent v0.4.8
 	github.com/pb33f/libopenapi v0.18.2
 	github.com/spf13/cobra v1.8.1
 	go.uber.org/multierr v1.11.0
@@ -28,7 +28,7 @@ require (
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/dig v1.18.0 // indirect
 	go.uber.org/fx v1.22.2 // indirect
-	golang.org/x/sys v0.25.0 // indirect
+	golang.org/x/sys v0.26.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
