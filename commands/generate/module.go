@@ -1,7 +1,7 @@
-package commands
+package generate
 
 import (
-	"github.com/kiwiworks/rodent-cli/commands/generate"
+	"github.com/kiwiworks/rodent-cli/commands/generate/oas3"
 	"github.com/kiwiworks/rodent/app"
 	"github.com/kiwiworks/rodent/app/module"
 	"github.com/kiwiworks/rodent/command"
@@ -9,11 +9,11 @@ import (
 
 func Module() app.Module {
 	return app.NewModule(
+		command.Commands(
+			CommandGroup,
+		),
 		module.SubModules(
-			// root command and cli core
-			command.Module,
-			// `rodent-cli generate` command group
-			generate.Module,
+			oas3.Module,
 		),
 	)
 }

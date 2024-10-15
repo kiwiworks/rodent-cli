@@ -1,25 +1,24 @@
-package generate
+package client
 
 import (
+	"context"
 	"net/url"
 	"path"
 
-	"github.com/spf13/cobra"
-
-	"github.com/kiwiworks/rodent-cli/commands/generate/oas3"
+	"github.com/kiwiworks/rodent-cli/commands/generate/oas3/client/generator"
 	"github.com/kiwiworks/rodent/command"
 	"github.com/kiwiworks/rodent/errors"
 )
 
-func Oas3Client() *command.Command {
+func GenerateOpenAPIClient() *command.Command {
 	var (
 		filename string
 		fileUrl  string
 	)
-	flags := oas3.DefaultFlags()
+	flags := generator.DefaultFlags()
 
-	return command.New("oas3", "Generate OAS3 client", "todo",
-		command.Runner(func(cmd *cobra.Command, args []string) error {
+	return command.New("generate.openapi.client", "Generate OAS3 client", "todo",
+		command.Do(func(ctx context.Context) error {
 			if filename == "" && fileUrl == "" {
 				return errors.Newf("either filename or url must be provided")
 			}
@@ -32,14 +31,14 @@ func Oas3Client() *command.Command {
 					Scheme: "file",
 					Path:   filename,
 				}
-				return oas3.Generate(cmd.Context(), u, flags)
+				return generator.Generate(ctx, u, flags)
 			}
 			if fileUrl != "" {
 				u, err := url.Parse(fileUrl)
 				if err != nil {
 					return err
 				}
-				return oas3.Generate(cmd.Context(), *u, flags)
+				return generator.Generate(ctx, *u, flags)
 			}
 			return errors.Newf("not implemented")
 		}),
