@@ -4,7 +4,7 @@ require (
 	github.com/cavaliergopher/grab/v3 v3.0.1
 	github.com/chanced/caps v1.0.2
 	github.com/dave/jennifer v1.7.1
-	github.com/kiwiworks/rodent v0.5.0
+	github.com/kiwiworks/rodent v0.5.1
 	github.com/pb33f/libopenapi v0.18.2
 	go.uber.org/multierr v1.11.0
 	go.uber.org/zap v1.27.0
